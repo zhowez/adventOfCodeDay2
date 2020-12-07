@@ -6,26 +6,82 @@
 //
 
 #include <iostream>
+#include <tuple>
+#include <vector>
+#include <fstream>
 
-bool validPassword(int low, int high, std::string password, char requiredChar);
+
+bool validPassword(std::tuple<int,int,std::string,char>);
+
+int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>&);
+
+void createVectorOfPasscodes(std::vector<std::tuple<int,int,std::string,char>>&,std::ifstream &);
+
+void openFile(std::string, std::ifstream&);
 
 int main(int argc, const char * argv[]) {
+	std::vector<std::tuple<int,int,std::string,char>> passwords;
+	std::ifstream file;
+	openFile(argv[1],file);
+	createVectorOfPasscodes(passwords,file);
+	
+	int numOfCodes = numberOfValidPasswords(passwords);
+	
+	std::cout << "The total number of valid passcodes is " << numOfCodes << "\n";
 	
 	return 0;
 }
 
 
-bool validPassword(int low, int high, std::string password, char requiredChar) {
+bool validPassword(std::tuple<int,int,std::string,char> password) {
+	int low = std::get<0>(password);
+	int high = std::get<1>(password);
+	std::string pW = std::get<2>(password);
+	char neededChar = std::get<3>(password);
+	
 	int counter = 0;
-	for (int i = 0; i < password.size(); ++i) {
-		if (password[i] == requiredChar) {
+	for (int i = 0; i < pW.size(); ++i) {
+		if (pW[i] == neededChar) {
 			++counter;
 		}
 	}
 	
-	if (low >= counter && counter <= high) {
+	if (counter >= low && counter <= high) {
 		return true;
 	}
 	
 	return false;
+}
+
+void createVectorOfPasscodes(std::vector<std::tuple<int,int,std::string,char>>& passwords,std::ifstream & file) {
+	int low;
+	char throwAway;
+	int high;
+	char letter;
+	std::string code;
+	while (file >> low) {
+		file >> throwAway >> high >> letter >>throwAway >> code;
+		passwords.push_back(std::make_tuple(low,high,code,letter));
+	}
+	
+}
+
+void openFile(std::string fileName,std::ifstream &file) {
+		file.open(fileName);
+	
+	if (!file.is_open()) {
+		std::cout << "The file could not open" << std::endl;
+		exit(-1);
+	}
+	
+}
+
+int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>& passwords) {
+	int count = 0;
+	for (int i = 0; i < passwords.size(); ++i) {
+		if (validPassword(passwords[i])) {
+			++count;
+		}
+	}
+	return count;
 }
