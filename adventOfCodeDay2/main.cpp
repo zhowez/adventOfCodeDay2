@@ -11,13 +11,15 @@
 #include <fstream>
 
 
-bool validPassword(std::tuple<int,int,std::string,char>);
+bool validPasswordPart1(std::tuple<int,int,std::string,char>);
 
-int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>&);
+int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>&,bool (*validPass)(std::tuple<int,int,std::string,char>));
 
 void createVectorOfPasscodes(std::vector<std::tuple<int,int,std::string,char>>&,std::ifstream &);
 
 void openFile(std::string, std::ifstream&);
+
+bool validPasswordPart2(std::tuple<int,int,std::string,char>);
 
 int main(int argc, const char * argv[]) {
 	std::vector<std::tuple<int,int,std::string,char>> passwords;
@@ -25,7 +27,11 @@ int main(int argc, const char * argv[]) {
 	openFile(argv[1],file);
 	createVectorOfPasscodes(passwords,file);
 	
-	int numOfCodes = numberOfValidPasswords(passwords);
+	int numOfCodes = numberOfValidPasswords(passwords,validPasswordPart1);
+	
+	std::cout << "The total number of valid passcodes is " << numOfCodes << "\n";
+	
+	numOfCodes = numberOfValidPasswords(passwords,validPasswordPart2);
 	
 	std::cout << "The total number of valid passcodes is " << numOfCodes << "\n";
 	
@@ -33,7 +39,7 @@ int main(int argc, const char * argv[]) {
 }
 
 
-bool validPassword(std::tuple<int,int,std::string,char> password) {
+bool validPasswordPart1(std::tuple<int,int,std::string,char> password) {
 	int low = std::get<0>(password);
 	int high = std::get<1>(password);
 	std::string pW = std::get<2>(password);
@@ -76,12 +82,31 @@ void openFile(std::string fileName,std::ifstream &file) {
 	
 }
 
-int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>& passwords) {
+int numberOfValidPasswords(std::vector<std::tuple<int,int,std::string,char>>& passwords,bool (*validPass)(std::tuple<int,int,std::string,char>)) {
 	int count = 0;
 	for (int i = 0; i < passwords.size(); ++i) {
-		if (validPassword(passwords[i])) {
+		if (validPass(passwords[i])) {
 			++count;
 		}
 	}
 	return count;
+}
+
+
+bool validPasswordPart2(std::tuple<int,int,std::string,char> password) {
+	bool isCorrect = false;
+	int low = std::get<0>(password);
+	int high = std::get<1>(password);
+	std::string pW = std::get<2>(password);
+	char neededChar = std::get<3>(password);
+	
+	if (pW[low-1] == neededChar) {
+		isCorrect = !isCorrect;
+	}
+	
+	if (pW[high-1] == neededChar) {
+		isCorrect = !isCorrect;
+	}
+	
+	return isCorrect;
 }
